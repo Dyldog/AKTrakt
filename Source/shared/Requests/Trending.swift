@@ -10,7 +10,7 @@ import Foundation
 import Alamofire
 
 /// Trending request show/movies
-public class TraktRequestTrending<T: TraktObject where T: protocol<Trending>>: TraktRequest {
+public class TraktRequestTrending<T: TraktObject>: TraktRequest where T: Trending {
     /// request type
     private let type: T.Type
 
@@ -41,20 +41,20 @@ public class TraktRequestTrending<T: TraktObject where T: protocol<Trending>>: T
 
      - returns: Alamofire.Request
      */
-    public func request(trakt: Trakt, completion: ([(watchers: UInt, media: T)]?, NSError?) -> Void) -> Request? {
-        return trakt.request(self) { response in
+	public func request(trakt: Trakt, completion: @escaping ([(watchers: UInt, media: T)]?, NSError?) -> Void) -> Request? {
+        return trakt.request(request: self) { response in
             guard let entries = response.result.value as? [JSONHash] else {
-                return completion(nil, response.result.error)
+                return completion(nil, response.result.error as NSError?)
             }
 
-            let list: [(watchers: UInt, media: T)] = entries.flatMap {
+			let list: [(watchers: UInt, media: T)] = entries.compactMap {
                 let media: T? = self.type.init(data: $0[self.type.objectName] as? JSONHash)
-                guard let watchers = $0["watchers"] as? UInt where media != nil else {
+				guard let watchers = $0["watchers"] as? UInt, media != nil else {
                     return nil
                 }
                 return (watchers: watchers, media: media!)
             }
-            completion(list, response.result.error)
+            completion(list, response.result.error as NSError?)
         }
     }
 }

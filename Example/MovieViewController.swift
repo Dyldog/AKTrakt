@@ -23,15 +23,15 @@ class MovieViewController: UIViewController {
 
         title = movie.title
 
-        if let image = view.viewWithTag(1) as? UIImageView, url = movie.imageURL(.FanArt, thatFits: image) {
-            image.af_setImageWithURL(url, placeholderImage: nil)
+		if let image = view.viewWithTag(1) as? UIImageView, let url = movie.imageURL(type: .FanArt, thatFits: image) {
+			image.af_setImage(withURL: url as URL, placeholderImage: nil)
         }
 
         loadCasting()
     }
 
     func loadCasting() {
-        TraktRequestMediaPeople(type: TraktMovie.self, id: movie.id).request(trakt) { casting, crew, error in
+		TraktRequestMediaPeople<TraktMovie>(type: TraktMovie.self, id: movie!.id).request(trakt: trakt) { casting, crew, error in
             print(casting)
         }
     }

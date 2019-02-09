@@ -10,6 +10,7 @@ import Foundation
 
 /// Represents a trakt token
 @objc public class TraktToken: NSObject, NSCoding {
+	
     /// The access token
     public let accessToken: String
     /// Expiration date
@@ -45,10 +46,10 @@ import Foundation
      */
     convenience init?(data: JSONHash?) {
         guard let accessToken = data?["access_token"] as? String,
-            expiresIn = data?["expires_in"] as? Double,
-            scope = data?["scope"] as? String,
-            tokenType = data?["token_type"] as? String,
-            refreshToken = data?["refresh_token"] as? String else {
+			let expiresIn = data?["expires_in"] as? Double,
+			let scope = data?["scope"] as? String,
+			let tokenType = data?["token_type"] as? String,
+			let refreshToken = data?["refresh_token"] as? String else {
                 return nil
         }
         self.init(accessToken: accessToken, expiresAt: NSDate(timeIntervalSinceNow: expiresIn), refreshToken: refreshToken, tokenType: tokenType, scope: scope)
@@ -56,11 +57,11 @@ import Foundation
 
     /// NSCoding
     public required init?(coder aDecoder: NSCoder) {
-        guard let accessToken = aDecoder.decodeObjectForKey("accessToken") as? String,
-        tokenType = aDecoder.decodeObjectForKey("tokenType") as? String,
-        expiresAt = aDecoder.decodeObjectForKey("expiresAt") as? NSDate,
-        refreshToken = aDecoder.decodeObjectForKey("refreshToken") as? String,
-            scope = aDecoder.decodeObjectForKey("scope") as? String else {
+		guard let accessToken = aDecoder.decodeObject(forKey: "accessToken") as? String,
+			let tokenType = aDecoder.decodeObject(forKey: "tokenType") as? String,
+			let expiresAt = aDecoder.decodeObject(forKey: "expiresAt") as? NSDate,
+			let refreshToken = aDecoder.decodeObject(forKey: "refreshToken") as? String,
+			let scope = aDecoder.decodeObject(forKey: "scope") as? String else {
                 return nil
         }
 
@@ -77,11 +78,11 @@ import Foundation
     }
 
     /// NSCoding
-    public func encodeWithCoder(aCoder: NSCoder) {
-        aCoder.encodeObject(accessToken, forKey: "accessToken")
-        aCoder.encodeObject(tokenType, forKey: "tokenType")
-        aCoder.encodeObject(expiresAt, forKey: "expiresAt")
-        aCoder.encodeObject(refreshToken, forKey: "refreshToken")
-        aCoder.encodeObject(scope, forKey: "scope")
+    public func encode(with aCoder: NSCoder) {
+		aCoder.encode(accessToken, forKey: "accessToken")
+        aCoder.encode(tokenType, forKey: "tokenType")
+        aCoder.encode(expiresAt, forKey: "expiresAt")
+        aCoder.encode(refreshToken, forKey: "refreshToken")
+        aCoder.encode(scope, forKey: "scope")
     }
 }

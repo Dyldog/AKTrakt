@@ -10,7 +10,7 @@ import Foundation
 import Alamofire
 
 /// Add rate to an object
-public class TraktRequestAddRating<T: TraktObject where T: protocol<ObjectType>, T: protocol<ListType>>: TraktRequest {
+public class TraktRequestAddRating<T: TraktObject>: TraktRequest where T: ObjectType, T: ListType {
     private var type: T.Type
     /**
      Init request
@@ -22,18 +22,18 @@ public class TraktRequestAddRating<T: TraktObject where T: protocol<ObjectType>,
      */
     public init(type: T.Type, id: TraktIdentifier, rating: UInt, ratedAt: NSDate = NSDate()) {
         self.type = type
-        let params: JSONHash = [
+		let params: [String: Any] = [
             type.listName: [
                 [
                     "rating": rating,
-                    "rated_at": Trakt.datetimeFormatter.stringFromDate(ratedAt),
+					"rated_at": Trakt.datetimeFormatter.string(from: ratedAt as Date),
                     "ids": [
                         "trakt": id
                     ]
                 ]
             ]
         ]
-        super.init(method: "POST", path: "/sync/ratings", params: params, oAuth: true)
+		super.init(method: "POST", path: "/sync/ratings", params: params as JSONHash, oAuth: true)
     }
 
     /**
@@ -44,16 +44,16 @@ public class TraktRequestAddRating<T: TraktObject where T: protocol<ObjectType>,
 
      - returns: Alamofire.Request
      */
-    public func request(trakt: Trakt, completion: (Bool?, NSError?) -> Void) -> Request? {
-        return trakt.request(self) { response in
+	public func request(trakt: Trakt, completion: @escaping (Bool?, NSError?) -> Void) -> Request? {
+        return trakt.request(request: self) { response in
             guard let items = response.result.value as? JSONHash,
-                added = items["added"] as? [String: Int],
-                value = added[self.type.listName]
+                let added = items["added"] as? [String: Int],
+                let value = added[self.type.listName]
                 else {
-                    return completion(nil, response.result.error)
+                    return completion(nil, response.result.error as NSError?)
             }
 
-            completion(value == 1, response.result.error)
+            completion(value == 1, response.result.error as NSError?)
         }
     }
 }

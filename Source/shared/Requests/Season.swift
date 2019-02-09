@@ -14,12 +14,12 @@ public class TraktRequestSeason: TraktRequest {
         super.init(path: "/shows/\(showId)/seasons/\(seasonNumber)", params: extended?.value())
     }
 
-    public func request(trakt: Trakt, completion: ([TraktEpisode]?, NSError?) -> Void) -> Request? {
-        return trakt.request(self) { response in
+	public func request(trakt: Trakt, completion: @escaping ([TraktEpisode]?, NSError?) -> Void) -> Request? {
+        return trakt.request(request: self) { response in
             guard let items = response.result.value as? [JSONHash] else {
-                return completion(nil, response.result.error)
+                return completion(nil, response.result.error as NSError?)
             }
-            completion(items.flatMap {
+			completion(items.compactMap {
                 TraktEpisode(data: $0)
             }, nil)
         }
@@ -27,18 +27,18 @@ public class TraktRequestSeason: TraktRequest {
 }
 
 public class TraktRequestSeasons: TraktRequest {
-    public init(showId: AnyObject, extended: TraktRequestExtendedOptions? = nil) {
+    public init(showId: Any, extended: TraktRequestExtendedOptions? = nil) {
         super.init(path: "/shows/\(showId)/seasons/", params: extended?.value())
     }
 
-    public func request(trakt: Trakt, completion: ([TraktSeason]?, NSError?) -> Void) -> Request? {
-        return trakt.request(self) { response in
+	public func request(trakt: Trakt, completion: @escaping ([TraktSeason]?, NSError?) -> Void) -> Request? {
+        return trakt.request(request: self) { response in
             guard let items = response.result.value as? [JSONHash] else {
-                return completion(nil, response.result.error)
+                return completion(nil, response.result.error as NSError?)
             }
-            completion(items.flatMap {
+			completion(items.compactMap {
                 TraktSeason(data: $0)
-            }.sort {
+            }.sorted {
                 $0.number < $1.number
             }, nil)
         }

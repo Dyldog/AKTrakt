@@ -27,7 +27,7 @@ public class TraktShow: TraktObject, Descriptable, Trending, Watchlist, Credits,
      - parameter data: data
      */
     override public func digest(data: JSONHash?) {
-        super.digest(data)
+        super.digest(data: data)
 
         year = data?["year"] as? UInt ?? year
 
@@ -73,7 +73,7 @@ public class TraktShow: TraktObject, Descriptable, Trending, Watchlist, Credits,
     }
 
     public func extend(with: TraktShow) {
-        super.extend(with)
+		super.extend(with: with)
 
         year = with.year ?? year
     }

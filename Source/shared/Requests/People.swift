@@ -10,18 +10,18 @@ import Foundation
 import Alamofire
 
 /// Get all people related an object
-public class TraktRequestMediaPeople<T: TraktObject where T: protocol<Credits>>: TraktRequest {
-    public init(type: T.Type, id: AnyObject, extended: TraktRequestExtendedOptions? = nil) {
+public class TraktRequestMediaPeople<T: TraktObject>: TraktRequest where T: Credits {
+    public init(type: T.Type, id: Any, extended: TraktRequestExtendedOptions? = nil) {
         super.init(path: "/\(type.listName)/\(id)/people", params: extended?.value())
     }
 
-    public func request(trakt: Trakt, completion: ([TraktCharacter]?, [TraktCrewPosition: [TraktCrew]]?, NSError?) -> Void) -> Request? {
-        return trakt.request(self) { response in
+	public func request(trakt: Trakt, completion: @escaping ([TraktCharacter]?, [TraktCrewPosition: [TraktCrew]]?, NSError?) -> Void) -> Request? {
+        return trakt.request(request: self) { response in
             guard let result = response.result.value as? JSONHash else {
-                return completion(nil, nil, response.result.error)
+                return completion(nil, nil, response.result.error as NSError?)
             }
 
-            let casting = (result["cast"] as? [JSONHash])?.flatMap {
+			let casting = (result["cast"] as? [JSONHash])?.compactMap {
                 TraktCharacter(data: $0)
             }
             var crew: [TraktCrewPosition: [TraktCrew]]? = nil
@@ -31,12 +31,12 @@ public class TraktRequestMediaPeople<T: TraktObject where T: protocol<Credits>>:
                     guard let position = TraktCrewPosition(rawValue: $0) else {
                         return
                     }
-                    crew![position] = $1.flatMap {
+					crew![position] = $1.compactMap {
                         TraktCrew(data: $0)
                     }
                 }
             }
-            completion(casting, crew, response.result.error)
+            completion(casting, crew, response.result.error as NSError?)
         }
     }
 }
@@ -47,16 +47,16 @@ public class TraktRequestPeople: TraktRequest {
         super.init(path: "/people/\(id)", params: extended.value())
     }
 
-    public func request(trakt: Trakt, completion: (TraktPerson?, NSError?) -> Void) -> Request? {
-        return trakt.request(self) { response in
-            completion(TraktPerson(data: response.result.value as? JSONHash), response.result.error)
+	public func request(trakt: Trakt, completion: @escaping (TraktPerson?, NSError?) -> Void) -> Request? {
+        return trakt.request(request: self) { response in
+            completion(TraktPerson(data: response.result.value as? JSONHash), response.result.error as NSError?)
         }
     }
 }
 
 /// Get a person credits in a media type
 
-public class TraktRequestPeopleCredits<T: TraktObject where T: protocol<Credits>>: TraktRequest {
+public class TraktRequestPeopleCredits<T: TraktObject>: TraktRequest where T: Credits {
     let type: T.Type
 
     public init(type: T.Type, id: AnyObject, extended: TraktRequestExtendedOptions = .Min) {
@@ -66,10 +66,10 @@ public class TraktRequestPeopleCredits<T: TraktObject where T: protocol<Credits>
 
     public typealias CreditsCompletionObject = (cast: [(character: String, media: T)]?, crew: [TraktCrewPosition: [(job: String, media: T)]]?)
 
-    public func request(trakt: Trakt, completion: (CreditsCompletionObject?, NSError?) -> Void) -> Request? {
-        return trakt.request(self) { response in
+	public func request(trakt: Trakt, completion: @escaping (CreditsCompletionObject?, NSError?) -> Void) -> Request? {
+        return trakt.request(request: self) { response in
             guard let result = response.result.value as? JSONHash else {
-                return completion(nil, response.result.error)
+                return completion(nil, response.result.error as NSError?)
             }
 
             var tuple: CreditsCompletionObject = (cast: [], crew: [:])
@@ -78,10 +78,10 @@ public class TraktRequestPeopleCredits<T: TraktObject where T: protocol<Credits>
                 guard let position = TraktCrewPosition(rawValue: key) else {
                     return
                 }
-                tuple.crew![position] = values.flatMap {
+				tuple.crew![position] = values.compactMap {
                     let media: T? = self.type.init(data: $0[self.type.objectName] as? JSONHash)
 
-                    guard let job = $0["job"] as? String where media != nil else {
+					guard let job = $0["job"] as? String, media != nil else {
                         print("cannot find job or media")
                         return nil
                     }
@@ -89,15 +89,15 @@ public class TraktRequestPeopleCredits<T: TraktObject where T: protocol<Credits>
                 }
             }
             // Cast
-            tuple.cast = (result["cast"] as? [JSONHash])?.flatMap {
+			tuple.cast = (result["cast"] as? [JSONHash])?.compactMap {
                 let media: T? = self.type.init(data: $0[self.type.objectName] as? JSONHash)
-                guard let character = $0["character"] as? String where media != nil else {
+				guard let character = $0["character"] as? String, media != nil else {
                     return nil
                 }
                 return (character: character, media: media!)
             }
 
-            completion(tuple, response.result.error)
+            completion(tuple, response.result.error as NSError?)
         }
     }
 }

@@ -14,7 +14,7 @@ import Foundation
  - TokenRequired: Cannot make request without token
  - UrlError:      Unable to prepare url
  */
-public enum TraktError: ErrorType {
+public enum TraktError: Error {
     case TokenRequired
     case UrlError
 }

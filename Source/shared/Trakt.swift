@@ -22,12 +22,12 @@ public class Trakt {
     /// Delay between each re attempt in seconds
     internal var retryInterval: Double = 5
     // Cache request attempts (in case of faileur/retry)
-    internal var attempts = NSCache()
+	internal var attempts = NSCache<AnyObject, AnyObject>()
     // Alamofire Manager
-    internal let manager = Manager()
+    internal let manager = SessionManager()
     // Trakt api version
     public let traktApiVersion = 2
-    // NSUserDefaults key
+    // UserDefaults key
     private var userDefaultsTokenKey: String
 
     /**
@@ -48,14 +48,14 @@ public class Trakt {
     }
 
     /**
-     Attempt to load token from NSUserDefaults
+     Attempt to load token from UserDefaults
 
      - returns: TraktToken
      */
     private func loadTokenFromDefaults() -> TraktToken? {
-        let defaults = NSUserDefaults.standardUserDefaults()
-        guard let data = defaults.objectForKey(userDefaultsTokenKey) as? NSData,
-            token = NSKeyedUnarchiver.unarchiveObjectWithData(data) as? TraktToken else {
+		let defaults = UserDefaults.standard
+		guard let data = defaults.object(forKey: userDefaultsTokenKey) as? NSData,
+			let token = NSKeyedUnarchiver.unarchiveObject(with: data as Data) as? TraktToken else {
             return nil
         }
         return token
@@ -69,13 +69,13 @@ public class Trakt {
     public func saveToken(token: TraktToken) {
         self.token = token
 
-        let data = NSKeyedArchiver.archivedDataWithRootObject(token)
-        NSUserDefaults.standardUserDefaults().setObject(data, forKey: userDefaultsTokenKey)
+		let data = NSKeyedArchiver.archivedData(withRootObject: token)
+		UserDefaults.standard.set(data, forKey: userDefaultsTokenKey)
     }
 
-    /// Remove token from NSUserDefaults
+    /// Remove token from UserDefaults
     public func clearToken() {
-        NSUserDefaults.standardUserDefaults().removeObjectForKey(userDefaultsTokenKey)
+		UserDefaults.standard.removeObject(forKey: userDefaultsTokenKey)
         token = nil
     }
 
@@ -85,23 +85,23 @@ public class Trakt {
      - returns: bool
      */
     public func hasValidToken() -> Bool {
-        return token?.expiresAt.compare(NSDate()) == .OrderedDescending
+		return token?.expiresAt.compare(NSDate() as Date) == .orderedDescending
     }
 
     /// Date formatter (trakt style)
-    public static let dateFormatter: NSDateFormatter = {
-        let df = NSDateFormatter()
-        df.locale = NSLocale(localeIdentifier: "en_US_POSIX")
-        df.timeZone = NSTimeZone(forSecondsFromGMT: 0)
+	public static let dateFormatter: DateFormatter = {
+        let df = DateFormatter()
+		df.locale = NSLocale(localeIdentifier: "en_US_POSIX") as Locale
+		df.timeZone = NSTimeZone(forSecondsFromGMT: 0) as TimeZone
         df.dateFormat = "yyyy'-'MM'-'dd"
         return df
     }()
 
     /// Datetime formatter (trakt style)
-    public static let datetimeFormatter: NSDateFormatter = {
-        let df = NSDateFormatter()
-        df.locale = NSLocale(localeIdentifier: "en_US_POSIX")
-        df.timeZone = NSTimeZone(forSecondsFromGMT: 0)
+	public static let datetimeFormatter: DateFormatter = {
+        let df = DateFormatter()
+		df.locale = NSLocale(localeIdentifier: "en_US_POSIX") as Locale
+		df.timeZone = NSTimeZone(forSecondsFromGMT: 0) as TimeZone
         df.dateFormat = "yyyy'-'MM'-'dd'T'HH':'mm':'ss'.000Z'"
         return df
     }()

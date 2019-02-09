@@ -13,8 +13,8 @@ Pod::Spec.new do |s|
   s.authors           = { "Florian Morello" => "arsonik@me.com" }
   s.source           = { :git => "https://github.com/arsonik/AKTrakt.git", :tag => s.version.to_s }
 
-  s.ios.deployment_target = '8.0'
-  s.tvos.deployment_target = '9.0'
+  s.ios.deployment_target = '11.0'
+  s.tvos.deployment_target = '11.0'
 
   s.source_files = 'Source/shared/**/*.swift'
   s.ios.source_files = 'Source/ios/**/*.swift'
@@ -22,6 +22,6 @@ Pod::Spec.new do |s|
   s.tvos.resources = 'Source/tvos/*.{xib,png}'
 
   s.ios.frameworks = 'UIKit', 'Webkit'
-  s.dependency 'Alamofire', '~> 3.4.0'
+  s.dependency 'Alamofire', '~> 4.7.3'
 
 end
