@@ -28,8 +28,8 @@ class ShowViewController: UIViewController {
 
         title = show.title
 
-        if let image = view.viewWithTag(1) as? UIImageView, url = show.imageURL(.FanArt, thatFits: image) {
-            image.af_setImageWithURL(url, placeholderImage: nil)
+		if let image = view.viewWithTag(1) as? UIImageView, let url = show.imageURL(type: .FanArt, thatFits: image) {
+			image.af_setImage(withURL: url as URL, placeholderImage: nil)
         }
 
         loadSeasons()
@@ -37,7 +37,7 @@ class ShowViewController: UIViewController {
     }
 
     func loadSeasons() {
-        TraktRequestSeasons(showId: show.id, extended: [.Episodes, .Images]).request(trakt) { [weak self] seasons, error in
+		TraktRequestSeasons(showId: show!.id, extended: [.Episodes, .Images]).request(trakt: trakt) { [weak self] seasons, error in
             guard seasons != nil else {
                 return
             }
@@ -51,7 +51,7 @@ class ShowViewController: UIViewController {
     }
 
     func loadCasting() {
-        TraktRequestMediaPeople(type: TraktShow.self, id: show.id, extended: .Images).request(trakt) { [weak self] casting, _, error in
+		TraktRequestMediaPeople(type: TraktShow.self, id: show.id, extended: .Images).request(trakt: trakt) { [weak self] casting, _, error in
             guard casting != nil else {
                 return
             }
@@ -62,38 +62,40 @@ class ShowViewController: UIViewController {
 }
 
 extension ShowViewController: UICollectionViewDataSource, UICollectionViewDelegate {
+	
     func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
         return 1
     }
 
-    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+	func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return casting.count
     }
 
-    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
-        return collectionView.dequeueReusableCellWithReuseIdentifier("cell", forIndexPath: indexPath)
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+		return collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath as IndexPath)
     }
 
     func collectionView(collectionView: UICollectionView, willDisplayCell cell: UICollectionViewCell, forItemAtIndexPath indexPath: NSIndexPath) {
         let character = casting[indexPath.row]
-        if let image = cell.viewWithTag(1) as? UIImageView, url = character.person.imageURL(.HeadShot, thatFits: image) {
+		if let image = cell.viewWithTag(1) as? UIImageView, let url = character.person.imageURL(type: .HeadShot, thatFits: image) {
             image.layer.cornerRadius = 25
-            image.af_setImageWithURL(url, placeholderImage: nil)
+			image.af_setImage(withURL: url as URL, placeholderImage: nil)
         }
     }
 }
 
 extension ShowViewController: UITableViewDataSource, UITableViewDelegate {
+	
     func numberOfSectionsInTableView(tableView: UITableView) -> Int {
         return show.seasons.count
     }
 
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+	func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return show.seasons[section].episodes.count
     }
 
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        return tableView.dequeueReusableCellWithIdentifier("episode") ?? UITableViewCell()
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+		return tableView.dequeueReusableCell(withIdentifier: "episode") ?? UITableViewCell()
     }
 
     func tableView(tableView: UITableView, willDisplayCell cell: UITableViewCell, forRowAtIndexPath indexPath: NSIndexPath) {

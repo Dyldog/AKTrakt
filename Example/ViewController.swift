@@ -23,7 +23,7 @@ class ViewController: UIViewController {
 
     var loadedOnce: Bool = false
 
-    override func viewDidAppear(animated: Bool) {
+	override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
         if !loadedOnce {
@@ -36,25 +36,25 @@ class ViewController: UIViewController {
     }
 
     @IBAction func displayAuth() {
-        if let vc = TraktAuthenticationViewController.credientialViewController(trakt, delegate: self) {
-            presentViewController(vc, animated: true, completion: nil)
+		if let vc = TraktAuthenticationViewController.credientialViewController(trakt: trakt, delegate: self) {
+			present(vc, animated: true, completion: nil)
         }
     }
 
     func load() {
         loadedOnce = true
-        TraktRequestTrending(type: TraktMovie.self, extended: .Images, pagination: TraktPagination(page: 1, limit: 10)).request(trakt) { [weak self] objects, error in
-            if let movies = objects?.flatMap({ $0.media }) {
+		TraktRequestTrending(type: TraktMovie.self, extended: .Images, pagination: TraktPagination(page: 1, limit: 10)).request(trakt: trakt) { [weak self] objects, error in
+			if let movies = objects?.compactMap({ $0.media }) {
                 self?.movies = movies
-                self?.collectionView.reloadSections(NSIndexSet(index: 0))
+				self?.collectionView.reloadSections(NSIndexSet(index: 0) as IndexSet)
             } else {
                 print(error)
             }
         }
-        TraktRequestTrending(type: TraktShow.self, extended: .Images, pagination: TraktPagination(page: 1, limit: 20)).request(trakt) { [weak self] objects, error in
-            if let shows = objects?.flatMap({ $0.media }) {
+		TraktRequestTrending(type: TraktShow.self, extended: .Images, pagination: TraktPagination(page: 1, limit: 20)).request(trakt: trakt) { [weak self] objects, error in
+			if let shows = objects?.compactMap({ $0.media }) {
                 self?.shows = shows
-                self?.collectionView.reloadSections(NSIndexSet(index: 1))
+				self?.collectionView.reloadSections(NSIndexSet(index: 1) as IndexSet)
             } else {
                 print(error)
             }
@@ -62,7 +62,7 @@ class ViewController: UIViewController {
     }
 
     func loadUser() {
-        TraktRequestProfile().request(trakt) { user, error in
+		TraktRequestProfile().request(trakt: trakt) { user, error in
             self.title = user?["username"] as? String
         }
     }
@@ -72,10 +72,10 @@ class ViewController: UIViewController {
         title = "Trakt"
     }
 
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        if let vc = segue.destinationViewController as? MovieViewController, movie = sender as? TraktMovie {
+	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+		if let vc = segue.destination as? MovieViewController, let movie = sender as? TraktMovie {
             vc.movie = movie
-        } else if let vc = segue.destinationViewController as? ShowViewController, show = sender as? TraktShow {
+		} else if let vc = segue.destination as? ShowViewController, let show = sender as? TraktShow {
             vc.show = show
         }
     }
@@ -84,41 +84,42 @@ class ViewController: UIViewController {
 extension ViewController: TraktAuthViewControllerDelegate {
     func TraktAuthViewControllerDidAuthenticate(controller: UIViewController) {
         loadUser()
-        dismissViewControllerAnimated(true, completion: nil)
+		dismiss(animated: true, completion: nil)
     }
 
     func TraktAuthViewControllerDidCancel(controller: UIViewController) {
-        dismissViewControllerAnimated(true, completion: nil)
+		dismiss(animated: true, completion: nil)
     }
 }
 
 extension ViewController: UICollectionViewDataSource, UICollectionViewDelegate {
-    func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
+
+	func numberOfSections(in collectionView: UICollectionView) -> Int {
         return 2
     }
-    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+	func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return section == 0 ? movies.count : shows.count
     }
 
-    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
-        return collectionView.dequeueReusableCellWithReuseIdentifier("movie", forIndexPath: indexPath)
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+		return collectionView.dequeueReusableCell(withReuseIdentifier: "movie", for: indexPath as IndexPath)
     }
 
-    func collectionView(collectionView: UICollectionView, willDisplayCell cell: UICollectionViewCell, forItemAtIndexPath indexPath: NSIndexPath) {
+	func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         if indexPath.section == 0 {
-            if let image = (cell.viewWithTag(1) as? UIImageView), url = movies[indexPath.row].imageURL(.Poster, thatFits: image) {
-                image.af_setImageWithURL(url, placeholderImage: nil)
+			if let image = (cell.viewWithTag(1) as? UIImageView), let url = movies[indexPath.row].imageURL(type: .Poster, thatFits: image) {
+				image.af_setImage(withURL: url as URL, placeholderImage: nil)
             }
-        } else if let image = (cell.viewWithTag(1) as? UIImageView), url = shows[indexPath.row].imageURL(.Poster, thatFits: image) where indexPath.section == 1 {
-            image.af_setImageWithURL(url, placeholderImage: nil)
+		} else if indexPath.section == 1, let image = (cell.viewWithTag(1) as? UIImageView), let url = shows[indexPath.row].imageURL(type: .Poster, thatFits: image) {
+			image.af_setImage(withURL: url as URL, placeholderImage: nil)
         }
     }
 
-    func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
+	func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if indexPath.section == 0 {
-            performSegueWithIdentifier("movie", sender: movies[indexPath.row])
+			performSegue(withIdentifier: "movie", sender: movies[indexPath.row])
         } else {
-            performSegueWithIdentifier("show", sender: shows[indexPath.row])
+			performSegue(withIdentifier: "show", sender: shows[indexPath.row])
         }
     }
 }
