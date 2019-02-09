@@ -10,7 +10,7 @@ import Foundation
 import Alamofire
 
 /// Add an object to watched history
-public class TraktRequestAddToHistory<T: TraktObject where T: protocol<ObjectType>, T: protocol<ListType>>: TraktRequest {
+public class TraktRequestAddToHistory<T: TraktObject>: TraktRequest where T: ObjectType, T: ListType {
     private var type: T.Type
     /**
      Init request
@@ -21,17 +21,17 @@ public class TraktRequestAddToHistory<T: TraktObject where T: protocol<ObjectTyp
      */
     public init(type: T.Type, id: TraktIdentifier, watchedAt: NSDate = NSDate()) {
         self.type = type
-        let params: JSONHash = [
+		let params: [String: Any] = [
             type.listName: [
                 [
                     "ids": [
                         "trakt": id
                     ],
-                    "watched_at": Trakt.datetimeFormatter.stringFromDate(watchedAt)
+					"watched_at": Trakt.datetimeFormatter.string(from: watchedAt as Date)
                 ]
             ]
         ]
-        super.init(method: "POST", path: "/sync/history", params: params, oAuth: true)
+		super.init(method: "POST", path: "/sync/history", params: params as JSONHash, oAuth: true)
     }
 
 
@@ -43,22 +43,22 @@ public class TraktRequestAddToHistory<T: TraktObject where T: protocol<ObjectTyp
 
      - returns: Alamofire.Request
      */
-    public func request(trakt: Trakt, completion: (Bool?, NSError?) -> Void) -> Request? {
-        return trakt.request(self) { response in
+	public func request(trakt: Trakt, completion: @escaping (Bool?, NSError?) -> Void) -> Request? {
+		return trakt.request(request: self) { response in
             guard let items = response.result.value as? JSONHash,
-                added = items["added"] as? [String: Int],
-                value = added[self.type.listName]
+                let added = items["added"] as? [String: Int],
+                let value = added[self.type.listName]
                 else {
-                return completion(nil, response.result.error)
+                return completion(nil, response.result.error as NSError?)
             }
 
-            completion(value == 1, response.result.error)
+            completion(value == 1, response.result.error as NSError?)
         }
     }
 }
 
 /// Remove an object from watched history
-public class TraktRequestRemoveFromHistory<T: TraktObject where T: protocol<ObjectType>, T: protocol<ListType>>: TraktRequest {
+public class TraktRequestRemoveFromHistory<T: TraktObject>: TraktRequest where T: ObjectType, T: ListType {
     private var type: T.Type
 
     /**
@@ -69,7 +69,7 @@ public class TraktRequestRemoveFromHistory<T: TraktObject where T: protocol<Obje
      */
     public init(type: T.Type, id: TraktIdentifier) {
         self.type = type
-        let params: JSONHash = [
+		let params: [String: Any] = [
             type.listName: [
                 [
                     "ids": [
@@ -78,7 +78,7 @@ public class TraktRequestRemoveFromHistory<T: TraktObject where T: protocol<Obje
                 ]
             ]
         ]
-        super.init(method: "POST", path: "/sync/history/remove", params: params, oAuth: true)
+		super.init(method: "POST", path: "/sync/history/remove", params: params as JSONHash, oAuth: true)
     }
 
     /**
@@ -89,16 +89,16 @@ public class TraktRequestRemoveFromHistory<T: TraktObject where T: protocol<Obje
 
      - returns: Alamofire.Request
      */
-    public func request(trakt: Trakt, completion: (Bool?, NSError?) -> Void) -> Request? {
-        return trakt.request(self) { response in
+	public func request(trakt: Trakt, completion: @escaping (Bool?, NSError?) -> Void) -> Request? {
+		return trakt.request(request: self) { response in
             guard let items = response.result.value as? JSONHash,
-                added = items["deleted"] as? [String: Int],
-                value = added[self.type.listName]
+                let added = items["deleted"] as? [String: Int],
+                let value = added[self.type.listName]
                 else {
-                    return completion(nil, response.result.error)
+                    return completion(nil, response.result.error as NSError?)
             }
 
-            completion(value == 1, response.result.error)
+            completion(value == 1, response.result.error as NSError?)
         }
     }
 }

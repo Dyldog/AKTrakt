@@ -3,18 +3,19 @@ use_frameworks!
 
 abstract_target 'Internal' do
     pod "AKTrakt", :path => "."
-    pod "Alamofire", '~> 3.4.0'
-    pod "AlamofireImage", '~> 2.4.0'
+    pod "Alamofire", '~> 4.7.3'
+    pod "AlamofireImage"
 
     target 'AKTrakt iOS' do
-        platform :ios, '8.0'
+        platform :ios, '11.0'
     end
 
     target 'AKTrakt tvOS' do
-        platform :tvos, '9.0'
+        platform :tvos, '11.0'
     end
 
     target 'Tests' do
+        platform :ios, '11.0'
     end
 end
 

@@ -94,7 +94,7 @@ public struct TraktPagination: TraktURLParameters {
 }
 
 /// Represents the extended params used by Trakt
-public struct TraktRequestExtendedOptions: OptionSetType, TraktURLParameters {
+public struct TraktRequestExtendedOptions: OptionSet, TraktURLParameters {
     public let rawValue: Int
 
     public init(rawValue: Int) {
@@ -131,7 +131,7 @@ public struct TraktRequestExtendedOptions: OptionSetType, TraktURLParameters {
             list.append("episodes")
         }
         if list.count > 0 {
-            return ["extended": list.joinWithSeparator(",")]
+            return ["extended": list.joined(separator: ",")]
         } else {
             return [:]
         }
@@ -147,13 +147,13 @@ extension Trakt {
 
      - returns: Alamofire.Request
      */
-    public func request(request: TraktRequest, completionHandler: Response<AnyObject, NSError> -> Void) -> Request? {
+	public func request(request: TraktRequest, completionHandler: @escaping (DataResponse<Any>) -> Void) -> Request? {
         do {
             guard let url = NSURL(string: "https://api-v2launch.trakt.tv\(request.path)") else {
                 throw TraktError.UrlError
             }
-            let mRequest = NSMutableURLRequest(URL: url)
-            mRequest.HTTPMethod = request.method
+			var mRequest = URLRequest(url: url as URL)
+			mRequest.httpMethod = request.method
 
             mRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
             mRequest.setValue("\(traktApiVersion)", forHTTPHeaderField: "trakt-api-version")
@@ -171,7 +171,8 @@ extension Trakt {
                 mRequest.setValue($0.1, forHTTPHeaderField: $0.0)
             }
 
-            let pRequest = (mRequest.HTTPMethod == "POST" ? ParameterEncoding.JSON : ParameterEncoding.URL).encode(mRequest, parameters: request.params).0
+			let pEncoding: ParameterEncoding = (mRequest.httpMethod == "POST" ? JSONEncoding.default : URLEncoding.default)
+			let pRequest = try pEncoding.encode(mRequest.asURLRequest(), with: request.params)
 
             request.attemptLeft -= 1
             return manager.request(pRequest).responseJSON { [weak self] response in
@@ -180,11 +181,11 @@ extension Trakt {
                     return
                 }
 
-                if response.response?.statusCode >= 500 {
+                if let containedResponse = response.response, containedResponse.statusCode >= 500 {
                     if request.attemptLeft > 0 {
                         // try again after delay
-                        return delay(ss.retryInterval) {
-                            ss.request(request, completionHandler: completionHandler)
+						return delay(delay: ss.retryInterval) {
+							ss.request(request: request, completionHandler: completionHandler)
                             return
                         }
                     } else {

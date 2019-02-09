@@ -39,7 +39,7 @@ public class TraktSeason: TraktObject, Watchlist {
      - parameter data: data
      */
     public override func digest(data: JSONHash?) {
-        super.digest(data)
+        super.digest(data: data)
 
         if let episodes = data?["episodes"] as? [JSONHash] {
             self.episodes = episodes.flatMap {
@@ -48,7 +48,7 @@ public class TraktSeason: TraktObject, Watchlist {
                 }
                 episode.seasonNumber = number ?? episode.seasonNumber
                 return episode
-            }.sort {
+            }.sorted {
                 $0.number < $1.number
             }
         }

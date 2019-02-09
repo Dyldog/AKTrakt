@@ -30,7 +30,7 @@ public class TraktAuthenticationViewController: UIViewController, WKNavigationDe
     public override func viewDidLoad() {
         super.viewDidLoad()
 
-        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .Cancel, target: self, action: #selector(TraktAuthenticationViewController.cancel))
+		navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(TraktAuthenticationViewController.cancel))
 
         wkWebview = WKWebView(frame: view.bounds)
         wkWebview.navigationDelegate = self
@@ -48,44 +48,45 @@ public class TraktAuthenticationViewController: UIViewController, WKNavigationDe
 	}
 
     @IBAction public func cancel() {
-        delegate?.TraktAuthViewControllerDidCancel(self)
+		delegate?.TraktAuthViewControllerDidCancel(controller: self)
     }
 
     private func initWebview() {
-        wkWebview.loadRequest(NSURLRequest(URL: NSURL(string: "http://trakt.tv/pin/\(trakt.applicationId)")!))
+		wkWebview.load(NSURLRequest(url: NSURL(string: "http://trakt.tv/pin/\(trakt.applicationId)")! as URL) as URLRequest)
     }
 
     private func pinFromNavigation(action: WKNavigationAction) -> String? {
-        if let path = action.request.URL?.path where path.containsString("/oauth/authorize/") {
-            let folders = path.componentsSeparatedByString("/")
-            return folders[3]
+		if let path = action.request.url?.path, path.contains("/oauth/authorize/") {
+			let query = action.request.url?.query
+			return query?.components(separatedBy: "=")[1]
+			
         }
         return nil
     }
 
-    public func webView(webView: WKWebView, decidePolicyForNavigationAction navigationAction: WKNavigationAction, decisionHandler: (WKNavigationActionPolicy) -> Void) {
-        if let pin = pinFromNavigation(navigationAction) {
-            decisionHandler(.Cancel)
-            TraktRequestToken(trakt: trakt, pin: pin).request(trakt) { token, error in
+	public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: (WKNavigationActionPolicy) -> Void) {
+		if let pin = pinFromNavigation(action: navigationAction) {
+			decisionHandler(.cancel)
+			_ = TraktRequestToken(trakt: trakt, pin: pin).request(trakt: trakt) { token, error in
                 guard token != nil else {
                     UIAlertView(title: "", message: "Failed to get a valid token", delegate: nil, cancelButtonTitle: "OK").show()
                     self.initWebview()
                     return
                 }
 
-                self.trakt.saveToken(token!)
-                self.delegate?.TraktAuthViewControllerDidAuthenticate(self)
+				self.trakt.saveToken(token: token!)
+				self.delegate?.TraktAuthViewControllerDidAuthenticate(controller: self)
             }
             return ()
         }
-        decisionHandler(WKNavigationActionPolicy.Allow)
+		decisionHandler(WKNavigationActionPolicy.allow)
     }
 
-    public func webView(webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: NSError) {
+	public func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
         print(error)
     }
 
-    public func webView(webView: WKWebView, didFailNavigation navigation: WKNavigation!, withError error: NSError) {
+	public func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
         print(error)
     }
 }

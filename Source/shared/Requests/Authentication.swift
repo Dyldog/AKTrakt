@@ -9,7 +9,7 @@
 import Foundation
 import Alamofire
 
-public typealias GeneratedCodeResponse = (deviceCode: String, userCode: String, verificationUrl: String, expiresAt: NSDate, interval: NSTimeInterval)
+public typealias GeneratedCodeResponse = (deviceCode: String, userCode: String, verificationUrl: String, expiresAt: NSDate, interval: TimeInterval)
 
 ///	Generate new device codes
 public class TraktRequestGenerateCode: TraktRequest {
@@ -19,7 +19,7 @@ public class TraktRequestGenerateCode: TraktRequest {
      - parameter clientId: clientId
      */
     public init(clientId: String) {
-        super.init(method: "POST", path: "/oauth/device/code", params: ["client_id": clientId])
+		super.init(method: "POST", path: "/oauth/device/code", params: ["client_id": clientId as AnyObject])
     }
 
     /**
@@ -30,18 +30,18 @@ public class TraktRequestGenerateCode: TraktRequest {
 
      - returns: Alamofire.Request
      */
-    public func request(trakt: Trakt, completion: (GeneratedCodeResponse?, NSError?) -> Void) -> Request? {
-        return trakt.request(self) { response in
+	public func request(trakt: Trakt, completion: @escaping (GeneratedCodeResponse?, NSError?) -> Void) -> Request? {
+        return trakt.request(request: self) { response in
             guard
                 let data = response.result.value as? JSONHash,
-                deviceCode = data["device_code"] as? String,
-                userCode = data["user_code"] as? String,
-                verificationUrl = data["verification_url"] as? String,
-                expiresIn = data["expires_in"] as? Double,
-                interval = data["interval"] as? Double else {
-                    return completion(nil, response.result.error)
+				let deviceCode = data["device_code"] as? String,
+                let userCode = data["user_code"] as? String,
+                let verificationUrl = data["verification_url"] as? String,
+                let expiresIn = data["expires_in"] as? Double,
+                let interval = data["interval"] as? Double else {
+                    return completion(nil, response.result.error as NSError?)
             }
-            completion((deviceCode: deviceCode, userCode: userCode, verificationUrl: verificationUrl, expiresAt: NSDate().dateByAddingTimeInterval(expiresIn), interval: interval), nil)
+			completion((deviceCode: deviceCode, userCode: userCode, verificationUrl: verificationUrl, expiresAt: NSDate().addingTimeInterval(expiresIn), interval: interval), nil)
         }
     }
 }
@@ -56,9 +56,9 @@ public class TraktRequestPollDevice: TraktRequest {
      */
     public init(trakt: Trakt, deviceCode: String) {
         super.init(method: "POST", path: "/oauth/device/token", params: [
-            "client_id": trakt.clientId,
-            "client_secret": trakt.clientSecret,
-            "code": deviceCode,
+			"client_id": trakt.clientId as AnyObject,
+			"client_secret": trakt.clientSecret as AnyObject,
+			"code": deviceCode as AnyObject,
         ])
         attemptLeft = 1
     }
@@ -71,9 +71,9 @@ public class TraktRequestPollDevice: TraktRequest {
 
      - returns: Alamofire.Request
      */
-    public func request(trakt: Trakt, completion: (TraktToken?, NSError?) -> Void) -> Request? {
-        return trakt.request(self) { response in
-            completion(TraktToken(data: response.result.value as? JSONHash), response.result.error)
+	public func request(trakt: Trakt, completion: @escaping (TraktToken?, NSError?) -> Void) -> Request? {
+		return trakt.request(request: self) { response in
+            completion(TraktToken(data: response.result.value as? JSONHash), response.result.error as NSError?)
         }
     }
 }
@@ -88,11 +88,11 @@ public class TraktRequestToken: TraktRequest {
      */
     public init(trakt: Trakt, pin: String) {
         super.init(method: "POST", path: "/oauth/token", params: [
-            "code": pin,
-            "client_id": trakt.clientId,
-            "client_secret": trakt.clientSecret,
-            "redirect_uri": "urn:ietf:wg:oauth:2.0:oob",
-            "grant_type": "authorization_code"
+			"code": pin as AnyObject,
+			"client_id": trakt.clientId as AnyObject,
+			"client_secret": trakt.clientSecret as AnyObject,
+			"redirect_uri": "urn:ietf:wg:oauth:2.0:oob" as AnyObject,
+            "grant_type": "authorization_code" as AnyObject,
             ])
     }
 
@@ -104,9 +104,9 @@ public class TraktRequestToken: TraktRequest {
 
      - returns: Alamofire.Request
      */
-    public func request(trakt: Trakt, completion: (TraktToken?, NSError?) -> Void) -> Request? {
-        return trakt.request(self) { response in
-            completion(TraktToken(data: response.result.value as? JSONHash), response.result.error)
+	public func request(trakt: Trakt, completion: @escaping (TraktToken?, NSError?) -> Void) -> Request? {
+        return trakt.request(request: self) { response in
+            completion(TraktToken(data: response.result.value as? JSONHash), response.result.error as NSError?)
         }
     }
 }
@@ -121,11 +121,11 @@ public class TraktRequestRefreshToken: TraktRequest {
      */
     public init(trakt: Trakt, token: TraktToken) {
         super.init(method: "POST", path: "/oauth/token", params: [
-            "refresh_token": token.refreshToken,
-            "client_id": trakt.clientId,
-            "client_secret": trakt.clientSecret,
-            "redirect_uri": "urn:ietf:wg:oauth:2.0:oob",
-            "grant_type": "refresh_token"
+			"refresh_token": token.refreshToken as AnyObject,
+            "client_id": trakt.clientId  as AnyObject,
+            "client_secret": trakt.clientSecret  as AnyObject,
+            "redirect_uri": "urn:ietf:wg:oauth:2.0:oob"  as AnyObject,
+            "grant_type": "refresh_token"  as AnyObject
         ])
     }
 
@@ -137,9 +137,9 @@ public class TraktRequestRefreshToken: TraktRequest {
 
      - returns: Alamofire.Request
      */
-    public func request(trakt: Trakt, completion: (TraktToken?, NSError?) -> Void) -> Request? {
-        return trakt.request(self) { response in
-            completion(TraktToken(data: response.result.value as? JSONHash), response.result.error)
+	public func request(trakt: Trakt, completion: @escaping (TraktToken?, NSError?) -> Void) -> Request? {
+        return trakt.request(request: self) { response in
+            completion(TraktToken(data: response.result.value as? JSONHash), response.result.error as NSError?)
         }
     }
 }
@@ -163,9 +163,9 @@ public class TraktRequestProfile: TraktRequest {
 
      - returns: Alamofire.Request
      */
-    public func request(trakt: Trakt, completion: (JSONHash?, NSError?) -> Void) -> Request? {
-        return trakt.request(self) { response in
-            completion(response.result.value as? JSONHash, response.result.error)
+	public func request(trakt: Trakt, completion: @escaping (JSONHash?, NSError?) -> Void) -> Request? {
+        return trakt.request(request: self) { response in
+            completion(response.result.value as? JSONHash, response.result.error as NSError?)
         }
     }
 }

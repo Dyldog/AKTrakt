@@ -40,7 +40,7 @@ private enum TraktSearchType: String {
 }
 
 /// Serarch request
-public class TraktRequestSearch<T: TraktObject where T: protocol<Searchable>>: TraktRequest {
+public class TraktRequestSearch<T: TraktObject>: TraktRequest where T: Searchable {
     /**
      Init
 
@@ -51,13 +51,13 @@ public class TraktRequestSearch<T: TraktObject where T: protocol<Searchable>>: T
      */
     public init(query: String, type: T.Type? = nil, year: UInt? = nil, pagination: TraktPagination? = nil) {
         var params: JSONHash = [
-            "query": query
+			"query": query as AnyObject
         ]
         if year != nil {
-            params["year"] = year!
+			params["year"] = year! as AnyObject
         }
         if type != nil {
-            params["type"] = type!.objectName
+			params["type"] = type!.objectName as AnyObject
         }
         if pagination != nil {
             params += pagination!.value()
@@ -73,13 +73,13 @@ public class TraktRequestSearch<T: TraktObject where T: protocol<Searchable>>: T
 
      - returns: Alamofire.Request
      */
-    public func request(trakt: Trakt, completion: ([TraktObject]?, NSError?) -> Void) -> Request? {
-        return trakt.request(self) { response in
+	public func request(trakt: Trakt, completion: @escaping ([TraktObject]?, NSError?) -> Void) -> Request? {
+		return trakt.request(request: self) { response in
             guard let entries = response.result.value as? [JSONHash] else {
-                return completion(nil, response.result.error)
+                return completion(nil, response.result.error as NSError?)
             }
 
-            completion(entries.flatMap {
+			completion(entries.compactMap {
                 guard let type = TraktSearchType(rawValue: $0["type"] as? String ?? "") else {
                     return nil
                 }

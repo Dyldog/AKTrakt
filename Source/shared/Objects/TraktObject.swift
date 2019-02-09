@@ -53,7 +53,7 @@ public protocol Extendable {
 /// TraktObject (abstract) class
 public class TraktObject: CustomStringConvertible, Hashable, Extendable {
     /// Object identifiers
-    public var ids: [TraktId: AnyObject] = [:] {
+    public var ids: [TraktId: Any] = [:] {
         didSet {
             id = ids[TraktId.Trakt] as? TraktIdentifier ?? id
         }
@@ -72,7 +72,7 @@ public class TraktObject: CustomStringConvertible, Hashable, Extendable {
      - parameter data: JSONHash
      */
     public required init?(data: JSONHash!) {
-        digest(data)
+		digest(data: data)
     }
 
     /**
@@ -80,12 +80,12 @@ public class TraktObject: CustomStringConvertible, Hashable, Extendable {
      - parameter data: String: Value Dictionary
      */
     public func digest(data: JSONHash?) {
-        ids = TraktId.extractIds(data) ?? ids
+		ids = TraktId.extractIds(data: data) ?? ids as [TraktId : Any]
 
         (data?["images"] as? JSONHash)?.forEach { rawType, list in
-            if let type = TraktImageType(rawValue: rawType), listed = list as? JSONHash {
+			if let type = TraktImageType(rawValue: rawType), let listed = list as? JSONHash {
                 listed.forEach { rawSize, uri in
-                    if let size = TraktImageSize(rawValue: rawSize), u = uri as? String, url = NSURL(string: u) {
+					if let size = TraktImageSize(rawValue: rawSize), let u = uri as? String, let url = NSURL(string: u) {
                         if images[type] == nil {
                             images[type] = [:]
                         }
@@ -103,15 +103,15 @@ public class TraktObject: CustomStringConvertible, Hashable, Extendable {
         if var me = self as? Watchable {
             me.watched = data?["completed"] as? Bool ?? me.watched
             me.plays = data?["plays"] as? UInt ?? me.plays
-            if let fa = data?["last_watched_at"] as? String, date = Trakt.datetimeFormatter.dateFromString(fa) {
-                me.lastWatchedAt = date
+			if let fa = data?["last_watched_at"] as? String, let date = Trakt.datetimeFormatter.date(from: fa) {
+				me.lastWatchedAt = date as NSDate
                 me.watched = true
             }
         }
 
         if var me = self as? Collectable {
-            if let string = data?["collected_at"] as? String, date = Trakt.datetimeFormatter.dateFromString(string) {
-                me.collectedAt = date
+			if let string = data?["collected_at"] as? String, let date = Trakt.datetimeFormatter.date(from: string) {
+				me.collectedAt = date as NSDate
             }
         }
     }
@@ -123,8 +123,8 @@ public class TraktObject: CustomStringConvertible, Hashable, Extendable {
      - returns: An optional NSURL
      */
     public func imageURL(type: TraktImageType, thatFits image: UIImageView) -> NSURL? {
-        let sizes = type.sizes.sort({$0.0.1.area < $0.1.1.area})
-        let area = (image.frame.width * image.frame.height) * UIScreen.mainScreen().scale
+		let sizes = type.sizes.sorted(by: { $0.value.area < $1.value.area})
+		let area = (image.frame.width * image.frame.height) * UIScreen.main.scale
         var selectedSize: TraktImageSize! = nil
         for size in sizes {
             if size.1.area >= area {
@@ -137,7 +137,7 @@ public class TraktObject: CustomStringConvertible, Hashable, Extendable {
             // use the largest image
             selectedSize = sizes.last?.0
         }
-        guard let aSize = selectedSize, url = images[type]?[aSize] else {
+		guard let aSize = selectedSize, let url = images[type]?[aSize] else {
             return nil
         }
         return url
@@ -145,7 +145,7 @@ public class TraktObject: CustomStringConvertible, Hashable, Extendable {
 
     /// CustomStringConvertible conformance
     public var description: String {
-        return "\(self.dynamicType) ids:\(ids)"
+		return "\(type(of: self)) ids:\(ids)"
     }
 
     /**
@@ -155,22 +155,22 @@ public class TraktObject: CustomStringConvertible, Hashable, Extendable {
      - parameter with: Object of the same type
      */
     public func extend(with: TraktObject) {
-        ids = with.ids ?? ids
-        images = with.images ?? images
+		ids = with.ids
+		images = with.images
 
-        if var me = self as? Descriptable, him = with as? Descriptable {
+		if var me = self as? Descriptable, var him = with as? Descriptable {
             me.title = him.title ?? me.title
             me.overview = him.overview ?? me.overview
         }
-        if var me = self as? Watchable, him = with as? Watchable {
+		if var me = self as? Watchable, var him = with as? Watchable {
             me.watched = him.watched ?? me.watched
             me.lastWatchedAt = him.lastWatchedAt ?? me.lastWatchedAt
             me.plays = him.plays ?? me.plays
         }
-        if var me = self as? Watchlist, him = with as? Watchlist {
+		if var me = self as? Watchlist, var him = with as? Watchlist {
             me.watchlist = him.watchlist ?? me.watchlist
         }
-        if var me = self as? Collectable, him = with as? Collectable {
+		if var me = self as? Collectable, var him = with as? Collectable {
             me.collectedAt = him.collectedAt ?? me.collectedAt
         }
     }

@@ -29,10 +29,10 @@ public class TraktRequestShow: TraktRequest {
 
      - returns: Alamofire.Request
      */
-    public func request(trakt: Trakt, completion: (TraktShow?, NSError?) -> Void) -> Request? {
-        return trakt.request(self) { response in
-            guard let item = response.result.value as? JSONHash, o = TraktShow(data: item) else {
-                return completion(nil, response.result.error)
+	public func request(trakt: Trakt, completion: @escaping (TraktShow?, NSError?) -> Void) -> Request? {
+        return trakt.request(request: self) { response in
+			guard let item = response.result.value as? JSONHash, let o = TraktShow(data: item) else {
+                return completion(nil, response.result.error as NSError?)
             }
             completion(o, nil)
         }
@@ -68,23 +68,23 @@ public class TraktRequestShowProgress: TraktRequest {
 
      - returns: Alamofire.Request
      */
-    public func request(trakt: Trakt, completion: ([TraktSeason]?, NSError?) -> Void) -> Request? {
-        return trakt.request(self) { response in
+	public func request(trakt: Trakt, completion: @escaping ([TraktSeason]?, NSError?) -> Void) -> Request? {
+        return trakt.request(request: self) { response in
             guard let data = response.result.value as? JSONHash,
-                seasonsData = data["seasons"] as? [JSONHash] else {
-                return completion(nil, response.result.error)
+				let seasonsData = data["seasons"] as? [JSONHash] else {
+                return completion(nil, response.result.error as NSError?)
             }
-            var seasons = seasonsData.flatMap {
+			var seasons = seasonsData.compactMap {
                 TraktSeason(data: $0)
             }
             // extend next episode
-            if let nextEpisode = TraktEpisode(data: data["next_episode"] as? JSONHash) where nextEpisode.seasonNumber != nil {
+			if let nextEpisode = TraktEpisode(data: data["next_episode"] as? JSONHash), nextEpisode.seasonNumber != nil {
                 nextEpisode.watched = false
                 if let season = seasons.filter({ $0.number == nextEpisode.seasonNumber! }).first {
-                    if season.episode(nextEpisode.number) == nil {
+					if season.episode(number: nextEpisode.number) == nil {
                         season.episodes.append(nextEpisode)
                     } else {
-                        season.episode(nextEpisode.number)?.extend(nextEpisode)
+						season.episode(number: nextEpisode.number)?.extend(with: nextEpisode)
                     }
                 } else {
                     let season = TraktSeason(data: ["number": nextEpisode.seasonNumber!])!

@@ -10,7 +10,7 @@ import Foundation
 import Alamofire
 
 /// Collection request show/movies
-public class TraktRequestGetCollection<T: TraktObject where T: ListType, T: ObjectType>: TraktRequest {
+public class TraktRequestGetCollection<T: TraktObject>: TraktRequest where T: ListType, T: ObjectType {
     /// request type
     private var type: T.Type
 
@@ -33,21 +33,21 @@ public class TraktRequestGetCollection<T: TraktObject where T: ListType, T: Obje
 
      - returns: Alamofire.Request
      */
-    public func request(trakt: Trakt, completion: ([T]?, NSError?) -> Void) -> Request? {
-        return trakt.request(self) { response in
+	public func request(trakt: Trakt, completion: @escaping ([T]?, NSError?) -> Void) -> Request? {
+        return trakt.request(request: self) { response in
             guard let entries = response.result.value as? [JSONHash] else {
-                return completion(nil, response.result.error)
+                return completion(nil, response.result.error as NSError?)
             }
 
-            let list: [T] = entries.flatMap {
+			let list: [T] = entries.compactMap {
                 let media: T? = self.type.init(data: $0[self.type.objectName] as? JSONHash)
                 if var object = media as? Collectable,
-                    date = $0["collected_at"] as? String,
-                    collectedAt = Trakt.datetimeFormatter.dateFromString(date) {
-                        object.collectedAt = collectedAt
+					let date = $0["collected_at"] as? String,
+					let collectedAt = Trakt.datetimeFormatter.date(from: date) {
+					object.collectedAt = collectedAt as NSDate
                 }
-                if var show = media as? TraktShow, let seasonsData = $0["seasons"] as? [JSONHash] {
-                    show.seasons = seasonsData.flatMap {
+				if let show = media as? TraktShow, let seasonsData = $0["seasons"] as? [JSONHash] {
+					show.seasons = seasonsData.compactMap {
                         TraktSeason(data: $0)
                     }
                 }

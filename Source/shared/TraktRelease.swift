@@ -29,18 +29,18 @@ public struct TraktRelease: CustomStringConvertible {
     public init?(data: JSONHash?) {
         guard
             let country = data?["country"] as? String,
-            certification = data?["certification"] as? String,
-            release_date = data?["release_date"] as? String,
-            date = Trakt.dateFormatter.dateFromString(release_date),
-            release_type = data?["release_type"] as? String,
-            type = TraktReleaseType(rawValue: release_type)
+			let certification = data?["certification"] as? String,
+			let release_date = data?["release_date"] as? String,
+			let date = Trakt.dateFormatter.date(from: release_date),
+			let release_type = data?["release_type"] as? String,
+			let type = TraktReleaseType(rawValue: release_type)
             else {
                 return nil
         }
 
         self.countryCode = country
         self.certification = certification
-        self.date = date
+		self.date = date as NSDate
         self.type = type
         self.note = data?["note"] as? String
     }

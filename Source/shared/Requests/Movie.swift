@@ -14,9 +14,9 @@ public class TraktRequestMovie: TraktRequest {
         super.init(path: "/movies/\(id)", params: extended?.value())
     }
 
-    public func request(trakt: Trakt, completion: (TraktMovie?, NSError?) -> Void) -> Request? {
-        return trakt.request(self) { response in
-            completion(TraktMovie(data: response.result.value as? JSONHash), response.result.error)
+	public func request(trakt: Trakt, completion: @escaping (TraktMovie?, NSError?) -> Void) -> Request? {
+        return trakt.request(request: self) { response in
+            completion(TraktMovie(data: response.result.value as? JSONHash), response.result.error as NSError?)
         }
     }
 }
@@ -27,12 +27,12 @@ public class TraktRequestMovieReleases: TraktRequest {
         super.init(path: "/movies/\(id)/releases" + (country != nil ? "/\(country!)" : ""), params: extended?.value())
     }
 
-    public func request(trakt: Trakt, completion: ([TraktRelease]?, NSError?) -> Void) -> Request? {
-        return trakt.request(self) { response in
+	public func request(trakt: Trakt, completion: @escaping ([TraktRelease]?, NSError?) -> Void) -> Request? {
+        return trakt.request(request: self) { response in
             guard let data = response.result.value as? [JSONHash] else {
-                return completion(nil, response.result.error)
+                return completion(nil, response.result.error as NSError?)
             }
-            completion(data.flatMap { TraktRelease(data: $0) }, response.result.error)
+			completion(data.compactMap { TraktRelease(data: $0) }, response.result.error as NSError?)
         }
     }
 }
