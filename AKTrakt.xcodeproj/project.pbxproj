@@ -22,6 +22,7 @@
 		2B145BC16186DEFE8B407C98 /* Pods_Internal_AKTrakt_tvOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 515D408CD9F6C2C5B411CA02 /* Pods_Internal_AKTrakt_tvOS.framework */; };
 		607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD51AFB9204008FA782 /* AppDelegate.swift */; };
 		612B127C202921F1199BDE39 /* Pods_Internal_AKTrakt_iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D9C57E2E1B0FF0C4840765E /* Pods_Internal_AKTrakt_iOS.framework */; };
+		62350052220EA3A500895924 /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62350051220EA3A500895924 /* Secrets.swift */; };
 		741DCFB07E32B844F87F761C /* Pods_Internal_Tests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F40EABCEFEA886D13F036386 /* Pods_Internal_Tests.framework */; };
 /* End PBXBuildFile section */
 
@@ -50,6 +51,7 @@
 		607FACD01AFB9204008FA782 /* AKTrakt iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "AKTrakt iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		607FACD41AFB9204008FA782 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		607FACD51AFB9204008FA782 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Example/AppDelegate.swift; sourceTree = "<group>"; };
+		62350051220EA3A500895924 /* Secrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Secrets.swift; sourceTree = "<group>"; };
 		8372053CFE34D254B930445B /* Pods-Internal-AKTrakt tvOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Internal-AKTrakt tvOS.release.xcconfig"; path = "Pods/Target Support Files/Pods-Internal-AKTrakt tvOS/Pods-Internal-AKTrakt tvOS.release.xcconfig"; sourceTree = "<group>"; };
 		9E2E7AD6BF2AD4A119FBEB44 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		A643A607976E59D8CDF78744 /* Pods-Internal-Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Internal-Tests.release.xcconfig"; path = "Pods/Target Support Files/Pods-Internal-Tests/Pods-Internal-Tests.release.xcconfig"; sourceTree = "<group>"; };
@@ -131,6 +133,7 @@
 				17109D071C05EF0A007D3D16 /* ViewController.swift */,
 				17C504911CF4480600CF368A /* MovieViewController.swift */,
 				17B1BC931CFD8E580044C7A1 /* ShowViewController.swift */,
+				62350051220EA3A500895924 /* Secrets.swift */,
 				607FACF51AFB993E008FA782 /* Podspec Metadata */,
 				607FACD21AFB9204008FA782 /* iOS */,
 				17109D041C05EF0A007D3D16 /* tvOS */,
@@ -477,6 +480,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				17F050011C91D789006F448F /* ViewController.swift in Sources */,
+				62350052220EA3A500895924 /* Secrets.swift in Sources */,
 				607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */,
 				17C504921CF4480600CF368A /* MovieViewController.swift in Sources */,
 				17B1BC941CFD8E580044C7A1 /* ShowViewController.swift in Sources */,
