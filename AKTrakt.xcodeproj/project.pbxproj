@@ -23,6 +23,7 @@
 		607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD51AFB9204008FA782 /* AppDelegate.swift */; };
 		612B127C202921F1199BDE39 /* Pods_Internal_AKTrakt_iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D9C57E2E1B0FF0C4840765E /* Pods_Internal_AKTrakt_iOS.framework */; };
 		62350052220EA3A500895924 /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62350051220EA3A500895924 /* Secrets.swift */; };
+		62E05654220EFF7E00E41D14 /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62350051220EA3A500895924 /* Secrets.swift */; };
 		741DCFB07E32B844F87F761C /* Pods_Internal_Tests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F40EABCEFEA886D13F036386 /* Pods_Internal_Tests.framework */; };
 /* End PBXBuildFile section */
 
@@ -460,6 +461,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				17F050031C91E044006F448F /* AppDelegate.swift in Sources */,
+				62E05654220EFF7E00E41D14 /* Secrets.swift in Sources */,
 				17109D081C05EF0A007D3D16 /* ViewController.swift in Sources */,
 				17C504931CF4480600CF368A /* MovieViewController.swift in Sources */,
 				17B1BC951CFD8E580044C7A1 /* ShowViewController.swift in Sources */,
